@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room — Загадки</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: #eee; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 20px; }
+
+        #controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #controls button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            background: #444;
+            color: #fff;
+        }
+        #controls button:hover { background: #666; }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            height: 160px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .card:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
+
+        .card.red    { background: #c0392b; }
+        .card.yellow { background: #f39c12; color: #333; text-shadow: none; }
+        .card.green  { background: #27ae60; }
+
+        .sub { font-size: 13px; font-weight: normal; margin-top: 6px; opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <h1>Загадки</h1>
+    <div id="controls">
+        <button onclick="forceRefresh()">Обновить</button>
+        <button onclick="gitUpdate()">Git Update</button>
+        <span id="status" style="margin-left:10px;font-size:14px;color:#aaa;"></span>
+    </div>
+    <div id="grid"></div>
+
+    <script>
+        const LABELS = { red: "Не в сети", yellow: "Готова", green: "Пройдена" };
+
+        async function loadPuzzles() {
+            const r = await fetch("/api/puzzles");
+            const data = await r.json();
+            const grid = document.getElementById("grid");
+            grid.innerHTML = "";
+            data.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "card " + p.color;
+                card.innerHTML = p.name + '<span class="sub">' + LABELS[p.color] + "</span>";
+                card.onclick = () => toggle(p.name);
+                grid.appendChild(card);
+            });
+        }
+
+        async function toggle(name) {
+            const r = await fetch(`/api/puzzles/${name}/toggle`, { method: "POST" });
+            const d = await r.json();
+            if (d.ok) loadPuzzles();
+        }
+
+        async function forceRefresh() {
+            await fetch("/api/puzzles/refresh", { method: "POST" });
+            document.getElementById("status").textContent = "Обновлено";
+            loadPuzzles();
+        }
+
+        async function gitUpdate() {
+            document.getElementById("status").textContent = "Проверка git...";
+            const r = await fetch("/api/git/update", { method: "POST" });
+            const d = await r.json();
+            document.getElementById("status").textContent = d.message;
+        }
+
+        loadPuzzles();
+        setInterval(loadPuzzles, 2000);
+    </script>
+</body>
+</html>
