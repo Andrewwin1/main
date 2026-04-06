@@ -22,7 +22,25 @@
       "Bash(taskkill /F /IM python.exe /T)",
       "Bash(taskkill //F //IM mosquitto.exe //T)",
       "Bash(C:\\\\Program Files\\\\Mosquitto\\\\mosquitto.exe:*)",
-      "Bash(python.exe -u test_integration.py)"
+      "Bash(python.exe -u test_integration.py)",
+      "Bash(mv mqtt_listener.py web_server.py git_updater.py server/)",
+      "Bash(rm -rf templates)",
+      "Bash(mv index.html frontend/)",
+      "Bash(mv frontend/index.html frontend/index.html)",
+      "Bash(mv templates/index.html frontend/index.html)",
+      "Bash(mv main_esp firmware/)",
+      "Bash(mv memory_uno firmware/)",
+      "Bash(mv phone_uno firmware/)",
+      "Bash(mv pyatnashky:*)",
+      "Bash(mv safe_uno firmware/)",
+      "Bash(python \"mqtt_listener.py\")",
+      "Bash(pip list:*)",
+      "Bash(python:*)",
+      "Bash(taskkill /IM python.exe)",
+      "Bash(git:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill /IM python.exe /F)",
+      "Bash(taskkill //IM python.exe //F)"
     ]
   }
 }
