@@ -13,10 +13,16 @@
  *0  9  -  5
  */
 byte pins [11] = {2, 3 , 4, 5, 6, 7, 8, 9, 10, A0, A1};
+const char* puzzle_name = "phone";
+
+// Состояния: 0 = active, 1 = completed
+byte puzzle_state = 0;
+
 byte right_way [7] = {4, 5, 7, 8, 1, 0, 3};
 byte last = 0;
 byte butt = 0;
 int count = 0;
+bool solved = false;
 byte matrix (byte f, byte s){
   if (f == 2){
     if (s == 6)  return 1;
@@ -44,17 +50,32 @@ void setup() {
   for (int i = 0; i < 11; i++){
     pinMode(pins[i], INPUT_PULLUP);
   }
-
+  // Отправляем начальное состояние
+  Serial.println("STATE:ACTIVE");
 }
 
 void loop() {
-  if (Serial.available() > 0){
-    String buff = Serial.readString();
-    if (buff == "open"){
-      // реле
+  // Читаем команды от ESP
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+    if (cmd == "SET_STATE:ACTIVE") {
+      puzzle_state = 0;
+      solved = false;
+      count = 0;
+      Serial.println("STATE:ACTIVE");
+    } else if (cmd == "SET_STATE:COMPLETED") {
+      puzzle_state = 1;
+      Serial.println("STATE:COMPLETED");
     }
   }
-  
+
+  // Работаем только если загадка активна
+  if (puzzle_state == 1) {
+    delay(100);
+    return;
+  }
+
   for (int i = 0; i < 11; i++){
     delay(10);
     pinMode(pins[i], OUTPUT);
@@ -68,28 +89,23 @@ void loop() {
 
         if (butt != last) {
           last = butt;
-//          Serial.println(butt);
           if (butt == right_way[count]){
             count += 1;
           }
           else count = 0;
 
           if (count == 7) {
-            Serial.println("end");
+            solved = true;
+            puzzle_state = 1;
             count = 0;
-            // отправить сигнал на реле 
+            Serial.println("UNLOCKED");
+            Serial.println("STATE:COMPLETED");
           }
-        }
-        else {
-          
         }
       }
     }
     pinMode(pins[i], INPUT_PULLUP);
-    
-    
   }
-  
 }
 
 int read_butt(byte pin){

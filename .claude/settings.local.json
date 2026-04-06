@@ -3,7 +3,26 @@
     "allow": [
       "Bash(pip install:*)",
       "Bash(C:/Program Files/Mosquitto/mosquitto.exe:*)",
-      "Bash(python mqtt_listener.py)"
+      "Bash(python mqtt_listener.py)",
+      "Bash(del mqtt_messages.db)",
+      "Bash(python -c ':*)",
+      "Bash(python.exe mqtt_listener.py)",
+      "Bash(python.exe test_sender.py)",
+      "Bash(python.exe -u mqtt_listener.py)",
+      "Bash(taskkill /im \"python.exe\" /f)",
+      "Bash(taskkill /im \"mosquitto.exe\" /f)",
+      "Bash(tasklist)",
+      "Bash(python.exe test_integration.py)",
+      "Bash(\"C:/Program Files/Mosquitto/mosquitto.exe\" -v -c \"C:/Users/Админ/PycharmProjects/main/mosquitto.conf\")",
+      "Bash(taskkill /F /IM \"mosquitto.exe\" /T)",
+      "Bash(taskkill /F /IM \"python.exe\" /T)",
+      "Bash(taskkill //F //IM \"mosquitto.exe\" //T)",
+      "Bash(taskkill //F //IM \"python.exe\" //T)",
+      "Bash(taskkill /F /IM mosquitto.exe /T)",
+      "Bash(taskkill /F /IM python.exe /T)",
+      "Bash(taskkill //F //IM mosquitto.exe //T)",
+      "Bash(C:\\\\Program Files\\\\Mosquitto\\\\mosquitto.exe:*)",
+      "Bash(python.exe -u test_integration.py)"
     ]
   }
 }

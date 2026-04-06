@@ -24,12 +24,45 @@ void setup() {
   pinMode(12, OUTPUT);
   digitalWrite(12, HIGH);
   randomSeed(analogRead(A0));
+  // Отправляем начальное состояние
+  Serial.println("STATE:ACTIVE");
 }
+const char* puzzle_name = "pyatnashky";
+
+// Состояния: 0 = active, 1 = completed
+byte puzzle_state = 0;
+
 int game_step = 0;
 int last = 0;
 int now = 0;
 long delay_millis = 0;
+bool solved = false;
+
 void loop() {
+  // Читаем команды от ESP
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+    if (cmd == "SET_STATE:ACTIVE") {
+      puzzle_state = 0;
+      solved = false;
+      game_step = 0;
+      now = 0;
+      last = 0;
+      for (int i = 0; i < 16; i++) pcf_led.digitalWrite(i, LOW);
+      Serial.println("STATE:ACTIVE");
+    } else if (cmd == "SET_STATE:COMPLETED") {
+      puzzle_state = 1;
+      Serial.println("STATE:COMPLETED");
+    }
+  }
+
+  // Работаем только если загадка активна
+  if (puzzle_state == 1) {
+    delay(100);
+    return;
+  }
+
   int rand = 0;
   if (!last && !now) {
     rand = random(0, 16);
@@ -53,7 +86,6 @@ void loop() {
   }
   if (game_step > 10) {
     for (int i = 0; i < 16; i++) {
-      
       pcf_led.digitalWrite(i, HIGH);
       delay(150);
     }
@@ -62,11 +94,15 @@ void loop() {
     for (int i = 0; i < 16; i++){
       pcf_led.digitalWrite(i, LOW);
     }
+    solved = true;
+    puzzle_state = 1;
     now = 0;
     last = 0;
     game_step = 0;
     delay_millis = millis();
     digitalWrite(12, HIGH);
+    Serial.println("UNLOCKED");
+    Serial.println("STATE:COMPLETED");
   }
   if (delay_millis + 1200 < millis()){
     delay_millis = millis();
