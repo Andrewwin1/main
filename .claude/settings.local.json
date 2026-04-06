@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(C:/Program Files/Mosquitto/mosquitto.exe:*)",
+      "Bash(python mqtt_listener.py)"
+    ]
+  }
+}
