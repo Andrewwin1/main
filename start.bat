@@ -16,7 +16,7 @@ if %ERRORLEVEL%==0 (
     echo [+] Mosquitto already running
 ) else (
     echo [*] Starting Mosquitto...
-    start "Mosquitto" /MIN "C:\Program Files\Mosquitto\mosquitto.exe" -v
+    start "Mosquitto" /MIN "C:\Program Files\Mosquitto\mosquitto.exe" -v -c "%~dp0server\mosquitto.conf"
     timeout /t 2 >nul
     echo [+] Mosquitto started
 )

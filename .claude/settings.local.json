@@ -52,7 +52,16 @@
       "Bash(python3:*)",
       "Read(//c/Users/Админ/Documents/**)",
       "Read(//c/Users/Адmin/Documents/**)",
-      "Bash(echo \"EXIT_CODE=$?\")"
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(tasklist /FI \"IMAGENAME eq mosquitto.exe\")",
+      "Bash(taskkill /F /IM mosquitto.exe)",
+      "Bash(taskkill /F /FI \"WINDOWTITLE eq MQTT Listener*\")",
+      "Bash(taskkill /F /FI \"WINDOWTITLE eq Web Server*\")",
+      "Bash(start \"Mosquitto\" /MIN \"C:\\\\Program Files\\\\Mosquitto\\\\mosquitto.exe\" -v -c \"server\\\\mosquitto.conf\")",
+      "Bash(sc query:*)",
+      "Bash(sc stop:*)",
+      "Bash(net stop:*)",
+      "Bash(start \"\" /MIN \"C:\\\\Program Files\\\\Mosquitto\\\\mosquitto.exe\" -v -c \"server\\\\mosquitto.conf\")"
     ]
   }
 }
