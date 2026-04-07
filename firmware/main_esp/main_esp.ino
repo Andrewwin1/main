@@ -50,7 +50,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for (unsigned int i = 0; i < length; i++) {
     _payload += String((char)payload[i]);
   }
-  _payload.toLowerCase();
   _payload.trim();
 
   String _topic(topic);

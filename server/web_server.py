@@ -7,7 +7,8 @@ from datetime import datetime, timezone
 from flask import Flask, jsonify, render_template
 
 from git_updater import check_for_updates
-from mqtt_listener import DB_PATH, send_state_command
+from mqtt_listener import DB_PATH
+import mqtt_listener
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("web_server")
@@ -102,13 +103,15 @@ def api_toggle(name):
     state = row["state"] if row else "active"
 
     if state == "completed":
-        # Сбросить в active
-        send_state_command(name, "SET_STATE:ACTIVE")
         new_state = "active"
     else:
-        # Переключить в completed
-        send_state_command(name, "SET_STATE:COMPLETED")
         new_state = "completed"
+
+    # Публикуем команду напрямую через глобальный mqtt_client
+    client = mqtt_listener.mqtt_client
+    if client:
+        topic = f"home/{name}"
+        client.publish(topic, f"SET_STATE:{new_state.upper()}")
 
     ts = datetime.now(timezone.utc).isoformat()
     con.execute(
@@ -142,7 +145,7 @@ def _run_git_check():
 
 def start_flask():
     _run_git_check()
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
 
 
 if __name__ == "__main__":
