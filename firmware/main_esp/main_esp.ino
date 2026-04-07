@@ -56,8 +56,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   // Команды с сервера пересылаем на Uno по UART
   if (_topic.equals(mqttTopicIN) && _payload.length() > 0) {
-    Serial.print("<<< MQTT CMD: ");
-    Serial.println(_payload);
     Serial.println(_payload);
   }
 }
