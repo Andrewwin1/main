@@ -61,7 +61,25 @@
       "Bash(sc query:*)",
       "Bash(sc stop:*)",
       "Bash(net stop:*)",
-      "Bash(start \"\" /MIN \"C:\\\\Program Files\\\\Mosquitto\\\\mosquitto.exe\" -v -c \"server\\\\mosquitto.conf\")"
+      "Bash(start \"\" /MIN \"C:\\\\Program Files\\\\Mosquitto\\\\mosquitto.exe\" -v -c \"server\\\\mosquitto.conf\")",
+      "Bash(taskkill /F /IM python.exe)",
+      "Bash(sc config:*)",
+      "Bash(netstat -anob)",
+      "Bash(cmd.exe:*)",
+      "Bash(tasklist /FI \"IMAGENAME eq python.exe\")",
+      "Bash(where cmd.exe)",
+      "Bash(ls:*)",
+      "Bash(.venv/Scripts/python.exe server/mqtt_listener.py)",
+      "Bash(grep -i python echo \"---CHECKING PORTS---\" netstat -an)",
+      "Bash(.venv/Scripts/python.exe server/web_server.py)",
+      "Bash(taskkill /F /FI \"IMAGENAME eq python.exe\")",
+      "Bash(netsh advfirewall:*)",
+      "WebFetch(domain:192.168.0.1)",
+      "Bash(netsh wlan:*)",
+      "Bash(.venv/Scripts/python.exe -m \"server/mqtt_listener.py\")",
+      "Bash(.venv/Scripts/python.exe -c \"import aiosqlite; print\\(dir\\(aiosqlite.Connection\\(\\)\\)\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"import aiosqlite; help\\(aiosqlite.Connection.execute\\)\")",
+      "Bash(.venv/Scripts/python.exe:*)"
     ]
   }
 }

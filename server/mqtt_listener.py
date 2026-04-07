@@ -223,8 +223,36 @@ async def listener_loop():
                         # Heartbeat: обновляем last_seen при любом сообщении от головоломки
                         asyncio.ensure_future(update_device_heartbeat(db, puzzle_name, topic))
 
+            # Heartbeat от ESP: /home/alive
+            if topic == "/home/alive":
+                device_name = payload.strip()
+                if device_name:
+                    await update_device_heartbeat(db, device_name, topic)
+
+            # Команды от веб-интерфейса: home/<name> с SET_STATE:TOGGLE
+            if topic.startswith("home/") and payload == "SET_STATE:TOGGLE":
+                parts = topic.split("/")
+                pname = parts[1] if len(parts) >= 2 else None
+                if pname:
+                    # Инвертируем текущее состояние
+                    ts2 = datetime.now(timezone.utc).isoformat()
+                    async with db.execute(
+                        "SELECT state FROM puzzle_states WHERE puzzle_name=?", (pname,)
+                    ) as cursor:
+                        row = await cursor.fetchone()
+                    cur = row[0] if row else "active"
+                    new_state = "active" if cur == "completed" else "completed"
+                    await db.execute(
+                        "INSERT OR REPLACE INTO puzzle_states (puzzle_name, state, updated_at) VALUES (?, ?, ?)",
+                        (pname, new_state, ts2),
+                    )
+                    await db.commit()
+                    # Отправляем ESP правильную команду
+                    await send_state_command(pname, f"SET_STATE:{new_state.upper()}")
+                    log.info("Toggle %s: %s -> %s", pname, cur, new_state)
+
             # Команды администратора: home/<puzzle_name>/set
-            if topic.startswith("home/") and topic.endswith("/set"):
+            elif topic.startswith("home/") and topic.endswith("/set"):
                 parts = topic.split("/")
                 puzzle_name = parts[1] if len(parts) >= 2 else "unknown"
                 cmd = payload.strip().upper()

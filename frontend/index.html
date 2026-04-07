@@ -46,10 +46,16 @@
             font-weight: bold;
             color: #fff;
             text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-            transition: transform 0.15s, box-shadow 0.15s;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.3s ease;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
         .card:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
+        .card:active { transform: scale(0.92); box-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+        .card.pressing {
+            transform: scale(0.93);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+            opacity: 0.7;
+        }
 
         .card.red    { background: #c0392b; }
         .card.yellow { background: #f39c12; color: #333; text-shadow: none; }
@@ -78,16 +84,20 @@
             data.forEach(p => {
                 const card = document.createElement("div");
                 card.className = "card " + p.color;
+                card.dataset.name = p.name;
                 card.innerHTML = p.name + '<span class="sub">' + LABELS[p.color] + "</span>";
-                card.onclick = () => toggle(p.name);
+                card.onclick = () => {
+                    card.classList.add("pressing");
+                    toggle(p.name);
+                    setTimeout(() => card.classList.remove("pressing"), 200);
+                };
+                card.ontouchend = () => card.classList.remove("pressing");
                 grid.appendChild(card);
             });
         }
 
         async function toggle(name) {
-            const r = await fetch(`/api/puzzles/${name}/toggle`, { method: "POST" });
-            const d = await r.json();
-            if (d.ok) loadPuzzles();
+            await fetch(`/api/puzzles/${name}/toggle`, { method: "POST" });
         }
 
         async function forceRefresh() {

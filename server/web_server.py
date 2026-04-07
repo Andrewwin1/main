@@ -4,11 +4,11 @@ import logging
 import os
 from datetime import datetime, timezone
 
+import paho.mqtt.client as mqtt
 from flask import Flask, jsonify, render_template
 
 from git_updater import check_for_updates
 from mqtt_listener import DB_PATH
-import mqtt_listener
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("web_server")
@@ -18,6 +18,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "frontend")
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR)
+
+# Свой MQTT-клиент для отправки команд
+_web_mqtt = None
+
+
+def _init_web_mqtt():
+    global _web_mqtt
+    _web_mqtt = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+    _web_mqtt.connect("localhost", 1883, 60)
+    _web_mqtt.loop_start()
+    log.info("Web MQTT client connected")
 
 KNOWN_PUZZLES = ["memory", "phone", "pyatnashky", "safe"]
 
@@ -96,33 +107,12 @@ def api_refresh():
 
 @app.route("/api/puzzles/<name>/toggle", methods=["POST"])
 def api_toggle(name):
-    con = _get_db()
-    row = con.execute(
-        "SELECT state FROM puzzle_states WHERE puzzle_name=?", (name,)
-    ).fetchone()
-    state = row["state"] if row else "active"
-
-    if state == "completed":
-        new_state = "active"
-    else:
-        new_state = "completed"
-
-    # Публикуем команду напрямую через глобальный mqtt_client
-    client = mqtt_listener.mqtt_client
-    if client:
+    # Только отправляем команду в MQTT — БД не трогаем, цвет обновится от ESP
+    if _web_mqtt:
         topic = f"home/{name}"
-        client.publish(topic, f"SET_STATE:{new_state.upper()}")
+        _web_mqtt.publish(topic, f"SET_STATE:TOGGLE")
 
-    ts = datetime.now(timezone.utc).isoformat()
-    con.execute(
-        "INSERT OR REPLACE INTO puzzle_states (puzzle_name, state, updated_at) VALUES (?, ?, ?)",
-        (name, new_state, ts),
-    )
-    con.commit()
-    con.close()
-
-    # Обновим статус в списке
-    return jsonify({"ok": True, "new_state": new_state})
+    return jsonify({"ok": True})
 
 
 @app.route("/api/git/update", methods=["POST"])
@@ -144,6 +134,7 @@ def _run_git_check():
 
 
 def start_flask():
+    _init_web_mqtt()
     _run_git_check()
     app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
 

@@ -1,9 +1,8 @@
 @echo off
 cd /d "%~dp0"
 
-set MOSQUITTO_PID=
-set LISTENER_PID=
-set WEBSERVER_PID=
+set VP=%~dp0.venv\Scripts\python.exe
+set SP=%~dp0server\
 
 echo ========================================
 echo   Escape Room Puzzle System
@@ -16,36 +15,27 @@ if %ERRORLEVEL%==0 (
     echo [+] Mosquitto already running
 ) else (
     echo [*] Starting Mosquitto...
-    start "Mosquitto" /MIN "C:\Program Files\Mosquitto\mosquitto.exe" -v -c "%~dp0server\mosquitto.conf"
+    start "Mosquitto" /MIN "%PROGRAMFILES%\Mosquitto\mosquitto.exe" -v -c "%~dp0server\mosquitto.conf"
     timeout /t 2 >nul
     echo [+] Mosquitto started
 )
 echo:
 
 echo [2/3] Starting MQTT Listener...
-start "MQTT Listener" /MIN cmd /c "cd /d "%~dp0server" ^& python mqtt_listener.py ^& pause"
+start "MQTT Listener" /B cmd /c ""%VP%" "%SP%mqtt_listener.py""
 timeout /t 1 >nul
 echo [+] Listener started
 echo:
 
 echo [3/3] Starting Web Server...
-echo     Browser will open in a few seconds...
-start "Web Server" /MIN cmd /c "cd /d "%~dp0server" ^& python web_server.py ^& pause"
-timeout /t 3 >nul
+start "Web Server" /B cmd /c ""%VP%" "%SP%web_server.py""
+timeout /t 4 >nul
 start http://localhost:5000
-
+echo [+] Web Server started
 echo:
 echo ========================================
 echo   All services started!
 echo   Web UI: http://localhost:5000
 echo ========================================
 echo:
-echo All services run in separate windows.
-echo To stop - close those windows or press Ctrl+C here.
-pause >nul
-
-echo:
-echo [*] Stopping services...
-taskkill /FI "WINDOWTITLE eq MQTT Listener*" /T /F >nul 2>&1
-taskkill /FI "WINDOWTITLE eq Web Server*" /T /F >nul 2>&1
-echo [#] Services stopped.
+pause

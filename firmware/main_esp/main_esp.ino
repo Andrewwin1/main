@@ -5,7 +5,7 @@
 
 const char* ssid = "4G-CPE-BE14";
 const char* password = "12345678";
-const char* mqtt_server = "192.168.0.103";
+const char* mqtt_server = "192.168.0.104";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -16,9 +16,9 @@ int value = 0;
 uint8_t long timer_alive = 0;
 
 // Имя загадки — менять для каждого устройства
-const char* device_name = "<>";
-const char* mqttTopicIN = "home/<>";      // входящие команды с сервера
-const char* mqttTopicOUT = "puzzle/<>";   // исходящие данные с Uno
+const char* device_name = "memory";
+const char* mqttTopicIN = "home/memory";      // входящие команды с сервера
+const char* mqttTopicOUT = "puzzle/memory";   // исходящие данные с Uno
 const char* check_alive_topic = "/home/alive";
 
 void setup_wifi() {
@@ -56,6 +56,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   // Команды с сервера пересылаем на Uno по UART
   if (_topic.equals(mqttTopicIN) && _payload.length() > 0) {
+    Serial.print("<<< MQTT CMD: ");
+    Serial.println(_payload);
     Serial.println(_payload);
   }
 }
@@ -105,14 +107,20 @@ void loop() {
     reconnect();
   }
 
-  // Читаем данные от Uno и отправляем в MQTT
-  if (Serial.available()) {
-    String buff = Serial.readStringUntil('\n');
-    buff.trim();
-    if (buff.length() > 0) {
-      char charsbuff[buff.length() + 1];
-      buff.toCharArray(charsbuff, buff.length() + 1);
-      client.publish(mqttTopicOUT, charsbuff);
+  // Читаем данные от Uno и отправляем в MQTT (неблокирующий буфер)
+  static String line = "";
+  while (Serial.available()) {
+    char c = Serial.read();
+    if (c == '\n' || c == '\r') {
+      line.trim();
+      if (line.length() > 0) {
+        client.publish(mqttTopicOUT, line.c_str());
+        Serial.print(">>> MQTT: ");
+        Serial.println(line);
+      }
+      line = "";
+    } else {
+      line += c;
     }
   }
 
